@@ -1,0 +1,1185 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PHP · El poder detrás de la web moderna</title>
+  <meta name="description" content="PHP es rápido, pragmático y escalable. Empieza a construir en minutos con un lenguaje moderno, tipado y respaldado por un ecosistema gigante." />
+  <link rel="preconnect" href="https://fonts.gstatic.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet" />
+  <style>
+    /* RESET BÁSICO */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    img {
+      max-width: 100%;
+      display: block;
+    }
+
+    button {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-family: inherit;
+    }
+
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0,0,0,0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    :root {
+      /* Paleta base: carbón, azul sereno, morado PHP (#4F5B93), blanco tiza, gris grafito */
+      --color-dark-charcoal: #333333;
+      --color-serene-blue: #3D5A80;
+      --color-warm-sand: #4F5B93; /* ahora usamos el morado PHP como color de acento */
+      --color-chalk-white: #F9F7F4;
+      --color-graphite-gray: #1A1A1A;
+
+      /* Extensiones para look "herramienta dev 2025" */
+      --bg-page-light: #F9F7F4;
+      --bg-page-dark: #0F1117;
+      --text-main-light: #1A1A1A;
+      --text-main-dark: #F9F7F4;
+      --surface-glass-dark: rgba(21,24,33,0.55);
+      --surface-glass-light: rgba(255,255,255,0.55);
+      --border-glass-dark: rgba(255,255,255,0.08);
+      --border-glass-light: rgba(0,0,0,0.08);
+
+      --radius-card: 1rem;
+      --radius-pill: 999px;
+
+      --shadow-xl: 0 30px 120px rgba(0,0,0,0.8),0 2px 20px rgba(0,0,0,0.6);
+      --shadow-card: 0 18px 60px rgba(0,0,0,0.6),0 2px 10px rgba(0,0,0,0.4);
+
+      /* Gradientes/acento (antes amarillo #E9C46A → ahora morado PHP #4F5B93 / rgb(79,91,147)) */
+      --gradient-accent: radial-gradient(circle at 20% 20%, rgba(79,91,147,0.4) 0%, rgba(61,90,128,0.15) 40%, rgba(15,17,23,0) 70%);
+      --gradient-hero: radial-gradient(circle at 20% 20%, rgba(79,91,147,0.15) 0%, rgba(61,90,128,0.35) 30%, rgba(15,17,23,0) 70%);
+      --gradient-ring: conic-gradient(from 0deg at 50% 50%, #4F5B93 0deg, #3D5A80 140deg, #4F5B93 360deg);
+
+      --transition-fast: .18s ease;
+      --transition-card: .28s cubic-bezier(.16,1,.3,1);
+
+      --container-max: 1280px;
+      --container-pad: 1.5rem;
+    }
+
+    /* THEMING oscuro/claro */
+    html[data-theme="dark"] {
+      --bg-page: var(--bg-page-dark);
+      --text-main: var(--text-main-dark);
+      --surface-glass: var(--surface-glass-dark);
+      --border-glass: var(--border-glass-dark);
+      --shadow-surface: var(--shadow-xl);
+      --card-bg: rgba(24,27,38,0.8);
+      --card-border: rgba(255,255,255,0.08);
+      --step-bg: rgba(51,51,51,0.6);
+      --step-text: var(--text-main-dark);
+      --section-bg-alt: #1a1f2d;
+      --footer-bg: #0B0D12;
+      color-scheme: dark;
+    }
+
+    html[data-theme="light"] {
+      --bg-page: var(--bg-page-light);
+      --text-main: var(--text-main-light);
+      --surface-glass: var(--surface-glass-light);
+      --border-glass: var(--border-glass-light);
+      --shadow-surface: 0 40px 120px rgba(0,0,0,0.12),0 4px 32px rgba(0,0,0,0.08);
+      --card-bg: rgba(255,255,255,0.75);
+      --card-border: rgba(0,0,0,0.08);
+      --step-bg: rgba(0,0,0,0.05);
+      --step-text: var(--text-main-light);
+      --section-bg-alt: #ffffff;
+      --footer-bg: #111;
+      color-scheme: light;
+    }
+
+    body {
+      background-color: var(--bg-page);
+      color: var(--text-main);
+      font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    /* utils */
+    .container {
+      max-width: var(--container-max);
+      margin-inline: auto;
+      padding-inline: var(--container-pad);
+      width: 100%;
+      position: relative;
+      z-index: 2; /* encima de los orbes */
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: .5rem;
+      font-size: .75rem;
+      font-weight: 600;
+      line-height: 1;
+      padding: .5rem .75rem;
+      border-radius: var(--radius-pill);
+      background: rgba(79,91,147,0.08);
+      color: var(--color-warm-sand);
+      border: 1px solid rgba(79,91,147,0.4);
+      box-shadow: 0 10px 30px rgba(79,91,147,0.3);
+    }
+
+    .eyebrow .dot {
+      width: .5rem;
+      height: .5rem;
+      border-radius: 999px;
+      background: radial-gradient(circle at 30% 30%, #fff 0%, #4F5B93 40%, rgba(79,91,147,0) 70%);
+      box-shadow: 0 0 12px #4F5B93;
+    }
+
+    .btn-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .75rem;
+    }
+
+    .btn {
+      appearance: none;
+      font-weight: 600;
+      font-size: .9rem;
+      line-height: 1.2;
+      padding: .8rem 1rem;
+      border-radius: var(--radius-pill);
+      border: 1px solid transparent;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: .5rem;
+      transition: all var(--transition-card);
+      position: relative;
+    }
+
+    .btn-primary {
+      background: linear-gradient(100deg, #4F5B93 0%, #3D5A80 60%, #1a1f2d 100%);
+      color: white;
+      font-weight: 700;
+      box-shadow: 0 20px 60px rgba(79,91,147,.4), 0 4px 12px rgba(0,0,0,.6);
+      border-color: rgba(255,255,255,.2);
+    }
+
+    html[data-theme="light"] .btn-primary {
+      color: white;
+      box-shadow: 0 20px 60px rgba(79,91,147,.4), 0 4px 12px rgba(0,0,0,.18);
+    }
+
+    .btn-primary:hover {
+      filter: brightness(1.08);
+      transform: translateY(-2px) scale(1.02);
+    }
+
+    .btn-ghost {
+      background: rgba(255,255,255,0.03);
+      color: var(--text-main);
+      border-color: rgba(255,255,255,0.14);
+      box-shadow: 0 12px 40px rgba(0,0,0,.6),0 2px 10px rgba(0,0,0,.4);
+    }
+
+    html[data-theme="light"] .btn-ghost {
+      background: rgba(0,0,0,0.03);
+      border-color: rgba(0,0,0,0.12);
+      box-shadow: 0 12px 40px rgba(0,0,0,.1),0 2px 10px rgba(0,0,0,.05);
+    }
+
+    .btn-ghost:hover {
+      background: rgba(255,255,255,0.07);
+      transform: translateY(-2px) scale(1.02);
+    }
+
+    /* HEADER / NAV */
+    .site-header {
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      padding-block: .75rem;
+      background: var(--surface-glass);
+      border-bottom: 1px solid var(--border-glass);
+      backdrop-filter: blur(12px) saturate(140%);
+      -webkit-backdrop-filter: blur(12px) saturate(140%);
+    }
+
+    .nav-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: nowrap;
+      gap: 1rem;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: .5rem;
+      font-weight: 700;
+      font-size: 1rem;
+      text-decoration: none;
+      color: var(--text-main);
+      line-height: 1;
+    }
+
+    .brand-logo {
+      height: 1.5rem;
+      width: auto;
+      filter: drop-shadow(0 6px 12px rgba(79,91,147,.5));
+    }
+
+    html[data-theme="light"] .brand-logo {
+      filter: drop-shadow(0 4px 8px rgba(0,0,0,.3));
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .nav-links a {
+      color: var(--text-main);
+      text-decoration: none;
+      font-size: .85rem;
+      font-weight: 500;
+      line-height: 1.2;
+      padding: .5rem .75rem;
+      border-radius: var(--radius-pill);
+      position: relative;
+      transition: all var(--transition-fast);
+    }
+
+    .nav-links a:hover {
+      background: rgba(255,255,255,.07);
+    }
+
+    html[data-theme="light"] .nav-links a:hover {
+      background: rgba(0,0,0,.05);
+    }
+
+    .theme-toggle {
+      width: 2rem;
+      height: 2rem;
+      border-radius: var(--radius-pill);
+      background: rgba(255,255,255,0.07);
+      border: 1px solid rgba(255,255,255,.15);
+      color: var(--text-main);
+      font-size: .8rem;
+      line-height: 1;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 10px 30px rgba(0,0,0,.6),0 2px 10px rgba(0,0,0,.4);
+      transition: all var(--transition-fast);
+    }
+
+    html[data-theme="light"] .theme-toggle {
+      background: rgba(0,0,0,0.03);
+      border-color: rgba(0,0,0,0.12);
+      box-shadow: 0 10px 30px rgba(0,0,0,.12),0 2px 10px rgba(0,0,0,.08);
+    }
+
+    .theme-toggle:hover {
+      transform: scale(1.05) translateY(-1px);
+    }
+
+    /* HERO */
+    .hero {
+      position: relative;
+      padding-block: clamp(4rem, 3vw + 3rem, 6rem);
+      overflow: hidden;
+      isolation: isolate;
+    }
+
+    .hero-bg-gradient {
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(circle at 20% 20%, rgba(79,91,147,0.18) 0%, rgba(61,90,128,0) 60%),
+        radial-gradient(circle at 80% 30%, rgba(61,90,128,0.4) 0%, rgba(15,17,23,0) 70%);
+      filter: blur(60px);
+      opacity: .6;
+      z-index: 0;
+    }
+
+    html[data-theme="light"] .hero-bg-gradient {
+      filter: blur(80px);
+      opacity: .4;
+    }
+
+    .orb {
+      position: absolute;
+      border-radius: 999px;
+      filter: blur(40px);
+      opacity: .55;
+      mix-blend-mode: screen;
+      pointer-events: none;
+      animation: float 8s ease-in-out infinite;
+    }
+
+    .orb.orb-1 {
+      width: 320px;
+      height: 320px;
+      background: radial-gradient(circle at 30% 30%, rgba(79,91,147,0.45) 0%, rgba(79,91,147,0) 70%);
+      top: -60px;
+      left: 5%;
+      animation-delay: 0s;
+    }
+
+    .orb.orb-2 {
+      width: 260px;
+      height: 260px;
+      background: radial-gradient(circle at 30% 30%, rgba(61,90,128,0.6) 0%, rgba(61,90,128,0) 70%);
+      bottom: -60px;
+      right: 5%;
+      animation-delay: 2s;
+    }
+
+    @keyframes float {
+      0%,100% { transform: translateY(0) translateX(0); }
+      50% { transform: translateY(-20px) translateX(10px); }
+    }
+
+    .hero-inner {
+      position: relative;
+      display: grid;
+      grid-template-columns: minmax(0,1fr) minmax(0,1fr);
+      gap: clamp(2rem,2vw,3rem);
+      align-items: flex-start;
+    }
+
+    @media (max-width: 900px) {
+      .hero-inner {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .hero-copy {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+      max-width: 40rem;
+    }
+
+    .hero-title {
+      font-size: clamp(2rem,1vw + 1.5rem,2.75rem);
+      font-weight: 900;
+      line-height: 1.15;
+      color: var(--text-main);
+      text-wrap: balance;
+      letter-spacing: -0.04em;
+    }
+
+    .hero-desc {
+      font-size: 1rem;
+      line-height: 1.5;
+      max-width: 36ch;
+      color: rgba(255,255,255,.8);
+    }
+
+    html[data-theme="light"] .hero-desc {
+      color: rgba(0,0,0,.75);
+    }
+
+    .social-proof {
+      font-size: .8rem;
+      font-weight: 500;
+      line-height: 1.4;
+      color: rgba(255,255,255,.6);
+      display: flex;
+      flex-wrap: wrap;
+      gap: .5rem;
+    }
+
+    html[data-theme="light"] .social-proof {
+      color: rgba(0,0,0,.6);
+    }
+
+    .social-proof img {
+      height: 1rem;
+      filter: grayscale(1) brightness(1.4);
+      opacity: .7;
+    }
+
+    html[data-theme="light"] .social-proof img {
+      filter: grayscale(1) brightness(.4);
+    }
+
+    /* CODE CARD */
+    .code-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-card);
+      box-shadow: var(--shadow-card);
+      min-width: 0;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .code-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: .7rem;
+      line-height: 1;
+      padding: .75rem 1rem;
+      border-bottom: 1px solid var(--card-border);
+      color: rgba(255,255,255,.6);
+    }
+
+    html[data-theme="light"] .code-card-header {
+      color: rgba(0,0,0,.6);
+    }
+
+    .code-filename {
+      display: flex;
+      align-items: center;
+      gap: .5rem;
+      font-weight: 500;
+    }
+
+    .status-dot {
+      width: .5rem;
+      height: .5rem;
+      border-radius: 999px;
+      background: radial-gradient(circle at 30% 30%, #fff 0%, #4ade80 40%, rgba(16,185,129,0) 70%);
+      box-shadow: 0 0 12px #4ade80;
+    }
+
+    .copy-btn {
+      font-size: .7rem;
+      line-height: 1;
+      font-weight: 500;
+      padding: .4rem .6rem;
+      border-radius: var(--radius-pill);
+      background: rgba(255,255,255,.07);
+      border: 1px solid rgba(255,255,255,.15);
+      color: var(--text-main);
+      transition: all var(--transition-fast);
+    }
+
+    html[data-theme="light"] .copy-btn {
+      background: rgba(0,0,0,.05);
+      border-color: rgba(0,0,0,.12);
+    }
+
+    .copy-btn.copied {
+      background: rgba(16,185,129,.15);
+      border-color: rgba(16,185,129,.5);
+      box-shadow: 0 10px 30px rgba(16,185,129,.4);
+    }
+
+    .code-block {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+      font-size: .8rem;
+      line-height: 1.6;
+      padding: 1rem 1rem 2.5rem;
+      color: #f8f8f2;
+      background: #1a1f2d;
+      position: relative;
+      overflow-x: auto;
+    }
+
+    html[data-theme="light"] .code-block {
+      background: #1a1f2d;
+      color: #f8f8f2;
+    }
+
+    .token.comment    { color: #6b7280; font-style: italic; }
+    .token.keyword    { color: #4F5B93; }
+    .token.class-name { color: #3b82f6; }
+    .token.fn         { color: #8b5cf6; }
+    .token.var        { color: #F59E0B;}
+    .token.string     { color: #10B981;}
+    .token.punct      { color: #fff;}
+
+    .terminal-hint {
+      font-size: .7rem;
+      line-height: 1.4;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+      color: rgba(255,255,255,.7);
+      background: rgba(0,0,0,.6);
+      border-top: 1px solid rgba(255,255,255,.07);
+      padding: .75rem 1rem;
+      white-space: nowrap;
+      overflow-x: auto;
+    }
+
+    /* SECCIONES */
+    .section {
+      position: relative;
+      padding-block: clamp(3rem,2vw,4rem);
+      background-color: transparent;
+    }
+
+    .section-alt {
+      background-color: var(--section-bg-alt);
+    }
+
+    .section-head {
+      max-width: 48rem;
+      text-align: center;
+      margin-inline: auto;
+      margin-bottom: clamp(2rem,2vw,3rem);
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .section-title {
+      font-size: clamp(1.5rem,1vw + 1rem,2rem);
+      font-weight: 700;
+      line-height: 1.2;
+      letter-spacing: -0.04em;
+      color: var(--text-main);
+      text-align: center;
+      text-wrap: balance;
+    }
+
+    .section-desc {
+      font-size: .95rem;
+      line-height: 1.5;
+      max-width: 42rem;
+      margin-inline: auto;
+      color: rgba(255,255,255,.7);
+      text-align: center;
+    }
+
+    html[data-theme="light"] .section-desc {
+      color: rgba(0,0,0,.6);
+    }
+
+    /* FEATURES */
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit,minmax(min(260px,100%),1fr));
+      gap: 1.5rem;
+    }
+
+    .feature-card {
+      position: relative;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-card);
+      box-shadow: var(--shadow-card);
+      padding: 1.5rem 1.5rem 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: .75rem;
+      min-height: 220px;
+      overflow: hidden;
+      isolation: isolate;
+      transform-origin: center;
+      transition: all var(--transition-card);
+    }
+
+    .feature-card::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: var(--gradient-accent);
+      opacity: .25;
+      mix-blend-mode: screen;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .feature-card:hover {
+      transform: translateY(-2px) scale(1.02);
+      box-shadow: 0 40px 160px rgba(0,0,0,.8),0 10px 40px rgba(0,0,0,.5);
+    }
+
+    html[data-theme="light"] .feature-card:hover {
+      box-shadow: 0 40px 160px rgba(0,0,0,.25),0 10px 40px rgba(0,0,0,.15);
+    }
+
+    .feature-icon-wrap {
+      width: 3rem;
+      height: 3rem;
+      border-radius: var(--radius-card);
+      background: var(--gradient-ring);
+      padding: 1px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      box-shadow: 0 20px 60px rgba(79,91,147,.4),0 2px 12px rgba(0,0,0,.6);
+    }
+
+    .feature-icon {
+      width: 100%;
+      height: 100%;
+      border-radius: inherit;
+      background: #0F1117;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: var(--color-warm-sand);
+    }
+
+    html[data-theme="light"] .feature-icon {
+      background: #fff;
+      color: var(--color-serene-blue);
+    }
+
+    .feature-title {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--text-main);
+      line-height: 1.3;
+    }
+
+    .feature-desc {
+      font-size: .9rem;
+      line-height: 1.5;
+      color: rgba(255,255,255,.7);
+    }
+
+    html[data-theme="light"] .feature-desc {
+      color: rgba(0,0,0,.7);
+    }
+
+    /* ECOSISTEMA */
+    .ecosystem-logos {
+      display: grid;
+      grid-template-columns: repeat(auto-fit,minmax(min(150px,100%),1fr));
+      gap: 2rem;
+      align-items: center;
+      justify-items: center;
+      margin-top: 2rem;
+      max-width: 60rem;
+      margin-inline: auto;
+    }
+
+    .ecosystem-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: .75rem;
+      text-align: center;
+      font-size: .8rem;
+      font-weight: 500;
+      color: rgba(255,255,255,.6);
+      transition: all var(--transition-fast);
+      filter: grayscale(1) brightness(.7);
+      opacity: .7;
+    }
+
+    html[data-theme="light"] .ecosystem-item {
+      color: rgba(0,0,0,.6);
+      filter: grayscale(1) brightness(.4);
+    }
+
+    .ecosystem-item img {
+      height: 48px;
+      object-fit: contain;
+    }
+
+    .ecosystem-item:hover {
+      filter: grayscale(0) brightness(1);
+      opacity: 1;
+      transform: translateY(-2px) scale(1.05);
+    }
+
+    /* GETTING STARTED / PASOS */
+    .steps-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit,minmax(min(260px,100%),1fr));
+      gap: 1.5rem;
+    }
+
+    .step-card {
+      background: var(--step-bg);
+      border-radius: var(--radius-card);
+      padding: 1.5rem 1.5rem 1.25rem;
+      border: 1px solid rgba(255,255,255,.1);
+      box-shadow: var(--shadow-card);
+      display: flex;
+      flex-direction: column;
+      gap: .75rem;
+      min-height: 200px;
+      color: var(--step-text);
+      position: relative;
+      overflow: hidden;
+    }
+
+    html[data-theme="light"] .step-card {
+      border-color: rgba(0,0,0,.08);
+    }
+
+    .step-number {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--color-warm-sand);
+      background: rgba(79,91,147,.1);
+      border: 1px solid rgba(79,91,147,.4);
+      width: 2rem;
+      height: 2rem;
+      border-radius: var(--radius-card);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 12px 30px rgba(79,91,147,.4);
+    }
+
+    .step-title {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--text-main);
+    }
+
+    .step-desc {
+      font-size: .9rem;
+      line-height: 1.5;
+      color: rgba(255,255,255,.7);
+    }
+
+    html[data-theme="light"] .step-desc {
+      color: rgba(0,0,0,.7);
+    }
+
+    .step-desc code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+      font-size: .8rem;
+      background: rgba(0,0,0,.4);
+      color: var(--color-warm-sand);
+      padding: .25rem .4rem;
+      border-radius: .4rem;
+      border: 1px solid rgba(255,255,255,.2);
+    }
+
+    html[data-theme="light"] .step-desc code {
+      background: rgba(0,0,0,.07);
+      border-color: rgba(0,0,0,.2);
+      color: var(--color-serene-blue);
+    }
+
+    .step-desc a {
+      color: var(--color-warm-sand);
+      font-weight: 600;
+      text-decoration: none;
+    }
+
+    html[data-theme="light"] .step-desc a {
+      color: var(--color-serene-blue);
+    }
+
+    /* FOOTER */
+    .site-footer {
+      background-color: var(--footer-bg);
+      color: rgba(255,255,255,.5);
+      padding-block: 3rem;
+      font-size: .8rem;
+      line-height: 1.5;
+      text-align: center;
+      border-top: 1px solid rgba(255,255,255,.07);
+    }
+
+    .footer-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .75rem 1.5rem;
+      justify-content: center;
+      margin-top: 1rem;
+    }
+
+    .footer-links a {
+      color: rgba(255,255,255,.8);
+      text-decoration: none;
+      transition: color var(--transition-fast);
+    }
+
+    .footer-links a:hover {
+      color: var(--color-warm-sand);
+    }
+
+    /* REVEAL ANIMATIONS */
+    [data-reveal] {
+      opacity: 0;
+      transform: translateY(12px) scale(.98);
+      transition: all .6s cubic-bezier(.16,1,.3,1);
+    }
+
+    [data-reveal].visible {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      [data-reveal] {
+        transition: none;
+        opacity: 1;
+        transform: none;
+      }
+      .orb { animation: none; }
+      .feature-card,
+      .ecosystem-item,
+      .btn-primary,
+      .btn-ghost,
+      .theme-toggle {
+        transition: none !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- NAV -->
+  <header class="site-header">
+    <div class="container nav-inner">
+      <a href="#hero" class="brand">
+        <img
+          class="brand-logo"
+          src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/27/PHP-logo.svg/2560px-PHP-logo.svg.png"
+          alt="PHP"
+        />
+        <span class="sr-only">PHP</span>
+      </a>
+
+      <nav class="nav-links" aria-label="Principal">
+        <a href="#getting-started">Comenzar</a>
+        <a href="https://www.php.net/downloads.php" target="_blank" rel="noopener noreferrer">Descargar</a>
+        <a href="https://www.php.net/manual/en/" target="_blank" rel="noopener noreferrer">Documentación</a>
+        <a href="https://www.php.net/community.php" target="_blank" rel="noopener noreferrer">Comunidad</a>
+      </nav>
+
+      <button class="theme-toggle" id="themeToggle" aria-label="Cambiar tema (oscuro / claro)">🌙</button>
+    </div>
+  </header>
+
+  <main>
+    <!-- HERO -->
+    <section class="hero" id="hero">
+      <div class="hero-bg-gradient"></div>
+      <div class="orb orb-1" aria-hidden="true"></div>
+      <div class="orb orb-2" aria-hidden="true"></div>
+
+      <div class="container hero-inner">
+        <!-- copy principal -->
+        <div class="hero-copy" data-reveal>
+          <div class="eyebrow">
+            <span class="dot" aria-hidden="true"></span>
+            <span>Rápido, pragmático y escalable</span>
+          </div>
+
+          <h1 class="hero-title">
+            PHP potencia gran parte de la web moderna. Tu backend sólido, en minutos.
+          </h1>
+
+          <p class="hero-desc">
+            PHP es un lenguaje moderno, tipado y orientado a objetos, con un ecosistema maduro (Laravel, Symfony, WordPress)
+            y herramientas como Composer. Construye rápido, escala con confianza.
+          </p>
+
+          <div class="btn-row">
+            <a
+              class="btn btn-primary"
+              href="https://www.php.net/"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <span>🚀 Comenzar</span>
+            </a>
+            <a class="btn btn-ghost" href="https://www.php.net/downloads.php" target="_blank" rel="noopener noreferrer">
+              <span>⬇ Descargar</span>
+            </a>
+          </div>
+
+          <div class="social-proof">
+            <span>Impulsa:</span>
+            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/9a/Laravel.svg/1969px-Laravel.svg.png" alt="Laravel logo" />
+            <img src="https://symfony.com/logos/symfony_black_03.svg" alt="Symfony logo" />
+            <img src="https://s.w.org/style/images/about/WordPress-logotype-wmark.png" alt="WordPress logo" />
+            <span>y más…</span>
+          </div>
+        </div>
+
+        <!-- tarjeta de código -->
+        <div class="code-card" data-reveal>
+          <div class="code-card-header">
+            <div class="code-filename"><span class="status-dot" aria-hidden="true"></span><span>hello.php</span></div>
+            <button class="copy-btn" id="copyBtn" aria-label="Copiar snippet de código">Copiar</button>
+          </div>
+
+          <pre class="code-block" id="codeSnippet"><code>
+<span class="token.punct">&lt;?</span><span class="token.keyword">php</span>
+
+<span class="token.comment">// PHP moderno es tipado y orientado a objetos.</span>
+<span class="token.keyword">declare</span>(<span class="token.punct">strict_types=</span><span class="token.keyword">1</span><span class="token.punct">);</span>
+
+<span class="token.keyword">final class</span> <span class="token.class-name">Greeter</span> {
+    <span class="token.keyword">public function</span> <span class="token.fn">greet</span>(<span class="token.keyword">string</span> <span class="token.var">$name</span> = <span class="token.string">'Mundo'</span>): <span class="token.keyword">string</span> {
+        <span class="token.keyword">return</span> <span class="token.string">"¡Hola, "</span> .
+            <span class="token.fn">htmlspecialchars</span>(<span class="token.var">$name</span>) .
+            <span class="token.string">"!"</span>;
+    }
+}
+
+<span class="token.var">$greeter</span> = <span class="token.keyword">new</span> <span class="token.class-name">Greeter</span>();
+<span class="token.fn">echo</span> <span class="token.var">$greeter</span>-&gt;<span class="token.fn">greet</span>();
+</code></pre>
+
+          <div class="terminal-hint">
+            $ php -S localhost:8000
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FEATURES / BENEFICIOS CLAVE -->
+    <section class="section" id="features">
+      <div class="container">
+        <header class="section-head" data-reveal>
+          <h2 class="section-title">PHP, reimaginado para 2025</h2>
+          <p class="section-desc">
+            Rendimiento de nivel producción, tipado fuerte, concurrencia y un ecosistema inmenso. Mucho más que "plantillas
+            para la web": PHP es una plataforma moderna para servicios, APIs y aplicaciones en tiempo real.
+          </p>
+        </header>
+
+        <div class="features-grid">
+          <article class="feature-card" data-reveal>
+            <div class="feature-icon-wrap">
+              <div class="feature-icon" aria-hidden="true">🚀</div>
+            </div>
+            <h3 class="feature-title">Rendimiento Excepcional</h3>
+            <p class="feature-desc">
+              La compilación JIT y optimizaciones constantes colocan a PHP entre los runtimes web más rápidos. Ideal para
+              microservicios y backends críticos.
+            </p>
+          </article>
+
+          <article class="feature-card" data-reveal>
+            <div class="feature-icon-wrap">
+              <div class="feature-icon" aria-hidden="true">🛡️</div>
+            </div>
+            <h3 class="feature-title">Tipado Fuerte y Robusto</h3>
+            <p class="feature-desc">
+              strict_types, tipos nativos y retorno tipado ayudan a prevenir errores temprano y mantener bases de código
+              serias y escalables.
+            </p>
+          </article>
+
+          <article class="feature-card" data-reveal>
+            <div class="feature-icon-wrap">
+              <div class="feature-icon" aria-hidden="true">📦</div>
+            </div>
+            <h3 class="feature-title">Ecosistema Enriquecido</h3>
+            <p class="feature-desc">
+              Composer y Packagist te dan acceso inmediato a miles de paquetes listos para producción. Reutiliza en vez
+              de reescribir.
+            </p>
+          </article>
+
+          <article class="feature-card" data-reveal>
+            <div class="feature-icon-wrap">
+              <div class="feature-icon" aria-hidden="true">⚡</div>
+            </div>
+            <h3 class="feature-title">Concurrencia y Tiempo Real</h3>
+            <p class="feature-desc">
+              Librerías como Swoole o Revolt permiten E/S asíncrona de alta concurrencia, rompiendo el mito de que PHP no
+              sirve para tiempo real.
+            </p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ECOSISTEMA -->
+    <section class="section section-alt" id="ecosystem">
+      <div class="container">
+        <header class="section-head" data-reveal>
+          <h2 class="section-title">¿Por qué PHP hoy?</h2>
+          <p class="section-desc">
+            Hablamos de frameworks de clase mundial, millones de sitios en producción y tooling de primera:
+            aprender PHP significa unirte a una comunidad enorme con soluciones probadas.
+          </p>
+        </header>
+
+        <div class="ecosystem-logos">
+          <a class="ecosystem-item" href="https://laravel.com/" target="_blank" rel="noopener noreferrer" data-reveal>
+            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/9a/Laravel.svg/1969px-Laravel.svg.png" alt="Laravel" />
+            <span>Laravel</span>
+          </a>
+          <a class="ecosystem-item" href="https://symfony.com/" target="_blank" rel="noopener noreferrer" data-reveal>
+            <img src="https://symfony.com/logos/symfony_black_03.svg" alt="Symfony" />
+            <span>Symfony</span>
+          </a>
+          <a class="ecosystem-item" href="https://wordpress.org/" target="_blank" rel="noopener noreferrer" data-reveal>
+            <img src="https://s.w.org/style/images/about/WordPress-logotype-wmark.png" alt="WordPress" />
+            <span>WordPress</span>
+          </a>
+          <a class="ecosystem-item" href="https://getcomposer.org/" target="_blank" rel="noopener noreferrer" data-reveal>
+            <img src="https://getcomposer.org/img/logo-composer-transparent2.png" alt="Composer" />
+            <span>Composer</span>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- GETTING STARTED -->
+    <section class="section" id="getting-started">
+      <div class="container">
+        <header class="section-head" data-reveal>
+          <h2 class="section-title">Empieza a construir en 3 pasos</h2>
+          <p class="section-desc">
+            Sin instalaciones eternas. Sin configuración misteriosa. Tu primera página dinámica en minutos usando el
+            servidor web integrado de PHP.
+          </p>
+        </header>
+
+        <div class="steps-grid">
+          <article class="step-card" data-reveal>
+            <div class="step-number">1</div>
+            <h3 class="step-title">Descarga e Instala</h3>
+            <p class="step-desc">
+              Obtén la última versión oficial para tu sistema operativo o usa la imagen oficial de
+              <a href="https://hub.docker.com/_/php" target="_blank" rel="noopener noreferrer">Docker</a>
+              para un entorno aislado y consistente.
+            </p>
+          </article>
+
+          <article class="step-card" data-reveal>
+            <div class="step-number">2</div>
+            <h3 class="step-title">Ejecuta tu Primer Script</h3>
+            <p class="step-desc">
+              Guarda el ejemplo anterior como <code>index.php</code> y lánzalo con:
+              <code>php -S localhost:8000</code>. Abre tu navegador en
+              <code>http://localhost:8000</code>.
+            </p>
+          </article>
+
+          <article class="step-card" data-reveal>
+            <div class="step-number">3</div>
+            <h3 class="step-title">Explora el Ecosistema</h3>
+            <p class="step-desc">
+              Aprende un framework moderno como
+              <a href="https://laravel.com/" target="_blank" rel="noopener noreferrer">Laravel</a>,
+              lee la <a href="https://www.php.net/manual/en/" target="_blank" rel="noopener noreferrer">documentación oficial</a>
+              o únete a la <a href="https://www.php.net/community.php" target="_blank" rel="noopener noreferrer">comunidad PHP</a>.
+            </p>
+          </article>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="site-footer">
+    <div class="container">
+      <p>Copyright © 2001–2025 The PHP Group. Todos los derechos reservados.</p>
+      <nav class="footer-links" aria-label="Footer">
+        <a href="https://www.php.net/privacy.php" target="_blank" rel="noopener noreferrer">Privacidad</a>
+        <a href="https://www.php.net/credits.php" target="_blank" rel="noopener noreferrer">Créditos</a>
+        <a href="https://www.php.net/contact.php" target="_blank" rel="noopener noreferrer">Contacto</a>
+      </nav>
+    </div>
+  </footer>
+
+  <!-- JS INTERACTIVO -->
+  <script>
+    (function() {
+      // 1. Tema inicial (oscuro/claro) según prefers-color-scheme o localStorage
+      const root = document.documentElement;
+      const toggleBtn = document.getElementById('themeToggle');
+      const storedTheme = localStorage.getItem('theme');
+
+      function setTheme(mode) {
+        root.setAttribute('data-theme', mode);
+        toggleBtn.textContent = mode === 'dark' ? '🌙' : '☀️';
+        localStorage.setItem('theme', mode);
+      }
+
+      if (storedTheme === 'light' || storedTheme === 'dark') {
+        setTheme(storedTheme);
+      } else {
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        setTheme(prefersDark ? 'dark' : 'light');
+      }
+
+      toggleBtn.addEventListener('click', () => {
+        const current = root.getAttribute('data-theme');
+        setTheme(current === 'dark' ? 'light' : 'dark');
+      });
+
+      // 2. Botón "Copiar" del snippet
+      const copyBtn = document.getElementById('copyBtn');
+      const codeSnippet = document.getElementById('codeSnippet');
+      copyBtn.addEventListener('click', async () => {
+        const textToCopy = codeSnippet.innerText.trim();
+        try {
+          await navigator.clipboard.writeText(textToCopy);
+          copyBtn.classList.add('copied');
+          copyBtn.textContent = 'Copiado ✓';
+          setTimeout(() => {
+            copyBtn.classList.remove('copied');
+            copyBtn.textContent = 'Copiar';
+          }, 2500);
+        } catch (err) {
+          // Fallback para navegadores sin clipboard API segura
+          const temp = document.createElement('textarea');
+          temp.value = textToCopy;
+          document.body.appendChild(temp);
+          temp.select();
+          document.execCommand('copy');
+          document.body.removeChild(temp);
+          copyBtn.classList.add('copied');
+          copyBtn.textContent = 'Copiado ✓';
+          setTimeout(() => {
+            copyBtn.classList.remove('copied');
+            copyBtn.textContent = 'Copiar';
+          }, 2500);
+        }
+      });
+
+      // 3. Reveal animations on scroll (secciones aparecen suavemente)
+      const revealEls = document.querySelectorAll('[data-reveal]');
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+            observer.unobserve(entry.target);
+          }
+        });
+      },{
+        threshold: 0.15
+      });
+      revealEls.forEach(el => observer.observe(el));
+
+      // 4. Scroll suave para anchors internos
+      document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', (e) => {
+          const href = anchor.getAttribute('href');
+          if (href.length > 1 && document.querySelector(href)) {
+            e.preventDefault();
+            document.querySelector(href).scrollIntoView({
+              behavior: 'smooth',
+              block: 'start'
+            });
+          }
+        });
+      });
+    })();
+  </script>
+</body>
+</html>
